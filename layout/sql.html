@@ -1,0 +1,4 @@
+INSERT OR REPLACE INTO articles (path, title, date) VALUES ('$path$', '$title$', '$date$');
+$for(keywords)$
+INSERT OR REPLACE INTO keywords (path, keyword) VALUES ('$path$', '$keywords$');
+$endfor$
