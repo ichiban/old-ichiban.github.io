@@ -2,11 +2,25 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Noto Sans', sans-serif;
-  font-weight: bold;
-  font-size: 28px;
-  line-height: 33.28px;
-  letter-spacing: -0.896px;
-  color: #222;
+  color: #757575;
+}
+
+h1 {
+  font-size: 45px;
+  line-height: 48px;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 34px;
+  line-height: 40px;
+  margin-bottom: 8px;
+}
+
+h3, h4, h5, h6 {
+  font-size: 24px;
+  line-height: 32px;
+  margin-bottom: 8px;
 }
 
 p {
@@ -30,8 +44,8 @@ html, body {
 
 body {
   font-family: 'Noto Serif', serif;
-  font-size: 18px;
-  line-height: 28.44px;
+  font-size: 16px;
+  line-height: 28px;
 
   word-wrap: beak-word;
 

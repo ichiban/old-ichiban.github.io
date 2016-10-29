@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>HTTP/1.1 parser in OCaml</title>
+    <title>HTTP/1.1 Parser is Just a Function</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
         <meta name="author" content="Ichiban" />
@@ -52,7 +52,7 @@
         <article>
       <main>
 		<header id="header">
-	  <h1 class="title">HTTP/1.1 parser in OCaml</h1>
+	  <h1 class="title">HTTP/1.1 Parser is Just a Function</h1>
 	  	  	  <ul class="authors">
 	    	    <li>Ichiban</li>
 	    	  </ul>
@@ -64,24 +64,24 @@
 	    	  </ul>
 	  	  	  <time class="date">2016-10-23</time>
 	  	</header>
-			<p>A function and algebraic data type can make a full-fledged HTTP/1.1 Parser. I was bored on high-level web stuff and digged into one of the very basic of web technologies -- HTTP parser. I looked into Node.js's <a href="https://github.com/nodejs/http-parser">HTTP Parser</a> which is based on NGINX's parser. It's written in C and <a href="https://github.com/ichiban/1w">I reconstructed it in OCaml</a>. I'm going to explain what it does in a simplified HTTP method parser example which is a subset of the full HTTP/1.1 parser.</p>
-<p>HTTP parser is not in Yacc/Lex. When it comes to parsing structured text data, you may pick Yacc and Lex for the tools, or parser combinators maybe. Though, you can't make use of those tools because an HTTP parser is allowed to see only a tiny fraction of data at a time. HTTP is based on TCP and data in TCP are transfered in several TCP packets.</p>
-<p>HTTP Parser is a State Machine. It consumes one ASCII character at a time and changes its internal state. It also triggers callbacks when interesting events happen. In this way, it can phase parsing -- process as many bytes as possible and wait until the next chunk arrives.</p>
-<p>A State Machine is a function. It takes an old state and a character then returns a new state. When we get another charater, use the new state as an old state, pass them to the function again, and repeat this iteration until it reaches a terminal state.</p>
+			<p>A full-fledged HTTP/1.1 parser is just a function. I was bored on high-level web stuff and digged into one of the very basic of web technologies -- HTTP parser. I looked into Node.js's <a href="https://github.com/nodejs/http-parser">HTTP Parser</a> which is based on NGINX's parser and figured it out that HTTP Parser is basically one simple function with a huge switch-case. It's written in C and <a href="https://github.com/ichiban/1w">I reconstructed it in OCaml</a>. I'm going to explain what it does in a simplified HTTP method parser example which is a subset of the full HTTP Parser.</p>
+<p>The first thing you need to know is that HTTP Parser is not in Yacc/Lex. When it comes to parsing structured text data, you may pick Yacc and Lex for the tools, or parser combinators maybe. Though, you can't make use of those tools because an HTTP parser is allowed to see only a tiny fraction of data at a time. HTTP is based on TCP and data in TCP are transfered in several TCP packets.</p>
+<p>Instead, HTTP Parser is a State Machine. It consumes one ASCII character at a time and changes its internal state. It also triggers callbacks when interesting events happen. In this way, it can phase parsing -- process as many bytes as possible and wait until the next chunk arrives.</p>
+<p>Moreover, a State Machine is a function. It takes an old state and a character then returns a new state. When we get another charater, use the new state as an old state, pass them to the function again, and repeat this iteration until it reaches a terminal state.</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">val</span> f : state -&gt; <span class="dt">char</span> -&gt; state</code></pre></div>
-<p>A state is an algebraic data type. It needs to keep track of parsing and remember a couple of things:</p>
+<p>Also, a state is an algebraic data type. It needs to keep track of parsing and remember a couple of things:</p>
 <ul>
 <li>Which syntactic element we're at now</li>
 <li>In this syntactic element, how many characters we're in</li>
 <li>In this syntactic element, how many characters we're going to have</li>
 <li>Etc.</li>
 </ul>
-<p>We can use a Variant to represent them. For example, If we're at the very beginning of HTTP method, it's <code>MethodStart</code>. If we're at the 3rd character of HTTP method, it's <code>Method (3, m)</code> where <code>m</code> is the index of the first character of method. Well, I'll explain the <code>m</code> part later.</p>
+<p>We can use a Variant to represent states. For example, If we're at the very beginning of HTTP method, it's <code>MethodStart</code>. If we're at the 3rd character of HTTP method, it's <code>Method (3, m)</code> where <code>m</code> is the index of the first character of method. Well, I'll explain the <code>m</code> part later.</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> state =
   | <span class="dt">MethodStart</span>
   | <span class="dt">Method</span> <span class="kw">of</span> <span class="dt">int</span> * <span class="dt">int</span>
   | <span class="dt">SpacesBeforeUri</span></code></pre></div>
-<p>Callbacks make things a little bit complicated, though. Here's a partial HTTP parser example that parses HTTP method:</p>
+<p>Nevertheless, callbacks make things a little bit complicated, though. Here's a partial HTTP parser example that parses HTTP method:</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">exception</span> <span class="dt">InvalidMethod</span>
 
 <span class="kw">let</span> parse_method on_method data state p =
@@ -100,13 +100,12 @@
      <span class="dt">Method</span> (n + <span class="dv">1</span>, m)
   | <span class="dt">Method</span> _, _ -&gt; <span class="co">(* invalid token *)</span>
      raise <span class="dt">InvalidMethod</span></code></pre></div>
-<p>This will parse &quot;GET&quot;, &quot;PUT&quot;, &quot;POST&quot;, &quot;DELETE&quot; or any other HTTP method-ish strings followed by a space.</p>
-<p>As you can see, it's not <code>state -&gt; char -&gt; state</code>. Its type is actually a bit more complicated.</p>
+<p>This will parse &quot;GET&quot;, &quot;PUT&quot;, &quot;POST&quot;, &quot;DELETE&quot; or any other HTTP method-ish strings followed by a space. As you can see, it's not <code>state -&gt; char -&gt; state</code>. Its type is actually a bit more complicated.</p>
 <div class="sourceCode"><pre class="sourceCode ocaml"><code class="sourceCode ocaml"><span class="kw">type</span> callback = <span class="dt">string</span> -&gt; <span class="dt">int</span> -&gt; <span class="dt">int</span> -&gt; <span class="dt">unit</span>
 <span class="kw">val</span> parse_method : callback -&gt; <span class="dt">string</span> -&gt; state -&gt; <span class="dt">int</span> -&gt; state</code></pre></div>
-<p>First <code>callback</code> is <code>on_method</code> callback function. When the state machine finds (a part of) HTTP method, it triggers the callback so that we can extract a substring of <code>data</code>. Next <code>string</code> is <code>data</code> currently available for parsing. Last <code>state -&gt; int -&gt; state</code> is a slight modification of <code>state -&gt; char -&gt; state</code>. Since we want to get HTTP method when we reach the end of method, we need to keep track of index of the first character of the syntactic element (in this case, HTTP method). That's the <code>m</code> part.</p>
+<p>The first <code>callback</code> is <code>on_method</code> callback function. When the state machine finds (a part of) HTTP method, it triggers the callback so that we can extract a substring of <code>data</code>. The next <code>string</code> is <code>data</code> currently available for parsing. Last <code>state -&gt; int -&gt; state</code> is a slight modification of <code>state -&gt; char -&gt; state</code>. Since we want to get HTTP method when we reach the end of method, we need to keep track of index of the first character of the syntactic element (in this case, HTTP method). That's the <code>m</code> part.</p>
 <p>Also, since we can see only a tiny fraction of <code>data</code> at a time, we need to refill <code>data</code> after we consume all of it. In that case, we need to reset <code>m</code> which points to a character in the previous <code>data</code> since <code>m</code> doesn't mean anything in the new <code>data</code>. Before we reset <code>m</code> to 0, we need to trigger the callback for a substring of <code>data</code> from <code>m</code> to the end of <code>data</code>. So, we may have several <code>on_message</code> callbacks for a single HTTP method.</p>
-<p>By following this approach, a full-fledged HTTP/1.1 parser can be constructed. <a href="https://github.com/ichiban/1w">My implementation is on GitHub</a>.</p>
+<p>By following this approach, a full-fledged HTTP/1.1 parser can be constructed with a single function. <a href="https://github.com/ichiban/1w">My implementation is on GitHub</a>.</p>
       </main>
       <aside>
 	<div>

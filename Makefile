@@ -6,7 +6,6 @@ PANDOC = pandoc
 SQLITE = sqlite3
 
 .PHONY: all clean web
-DEFAULT: all
 
 all: web
 
