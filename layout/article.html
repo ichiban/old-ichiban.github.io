@@ -14,6 +14,10 @@
     $if(keywords)$
     <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
     $endif$
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@1ban" />
+    <meta name="twitter:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" />
+    <meta name="twitter:description" content="Ichiban wrote$if(keywords)$ on $for(keywords)$$keywords$, $endfor$and more.$endif$" />
     $if(highlighting-css)$
     <style type="text/css">
       $highlighting-css$
