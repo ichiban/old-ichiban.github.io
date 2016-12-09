@@ -1,10 +1,16 @@
-<!doctype html>
+<!DOCTYPE HTML>
+<!--
+  Strata by HTML5 UP
+  html5up.net | @ajlkn
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
 <html>
   <head>
     <meta charset="utf-8" />
     <title>HTTP/1.1 Parser is Just a Function</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
         <meta name="author" content="Ichiban" />
             <meta name="date" content="2016-10-23" />
             <meta name="keywords" content="Web, HTTP, State Machine, OCaml" />
@@ -49,26 +55,43 @@
       code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
       code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
     </style>
-            <link rel="stylesheet" href="css/normalize.css" type="text/css" />
-        <link rel="stylesheet" href="css/common.css" type="text/css" />
-              </head>
-  <body>
-        <article>
-      <main>
-		<header id="header">
-	  <h1 class="title">HTTP/1.1 Parser is Just a Function</h1>
-	  	  	  <ul class="authors">
-	    	    <li>Ichiban</li>
-	    	  </ul>
-	  	  	  <ul class="keywords">
-	    	    <li>Web</li>
-	    	    <li>HTTP</li>
-	    	    <li>State Machine</li>
-	    	    <li>OCaml</li>
-	    	  </ul>
-	  	  	  <time class="date">2016-10-23</time>
-	  	</header>
-			<p>A full-fledged HTTP/1.1 parser is just a function. I was bored on high-level web stuff and digged into one of the very basic of web technologies -- HTTP parser. I looked into Node.js's <a href="https://github.com/nodejs/http-parser">HTTP Parser</a> which is based on NGINX's parser and figured it out that HTTP Parser is basically one simple function with a huge switch-case. It's written in C and <a href="https://github.com/ichiban/1w">I reconstructed it in OCaml</a>. I'm going to explain what it does in a simplified HTTP method parser example which is a subset of the full HTTP Parser.</p>
+            <link rel="stylesheet" href="assets/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="assets/css/custom.css" type="text/css" />
+            
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+  </head>
+  <body id="top">
+
+    <!-- Header -->
+      <header id="header">
+        <div class="inner">
+          <a href="index.html" class="image avatar"><img src="images/avatar.jpg" alt="" /></a>
+          <h1><strong>I am Ichiban</strong>, <br />a software developer <br />in Tokyo, Japan.</h1>
+        </div>
+      </header>
+
+    <!-- Main -->
+      <div id="main">
+
+        <!-- One -->
+        <section id="one">
+	  	  <header class="major">
+	    <h1>HTTP/1.1 Parser is Just a Function</h1>
+	    	    <p>
+	    	    <ul class="authors">
+	      	      <li>Ichiban</li>
+	      	    </ul>
+	    	    	    <ul class="keywords">
+	      	      <li>Web</li>
+	      	      <li>HTTP</li>
+	      	      <li>State Machine</li>
+	      	      <li>OCaml</li>
+	      	    </ul>
+	    	    	    <time class="date">2016-10-23</time>
+	    	    </p>
+	  </header>
+	  	  	  <p>A full-fledged HTTP/1.1 parser is just a function. I was bored on high-level web stuff and digged into one of the very basic of web technologies -- HTTP parser. I looked into Node.js's <a href="https://github.com/nodejs/http-parser">HTTP Parser</a> which is based on NGINX's parser and figured it out that HTTP Parser is basically one simple function with a huge switch-case. It's written in C and <a href="https://github.com/ichiban/1w">I reconstructed it in OCaml</a>. I'm going to explain what it does in a simplified HTTP method parser example which is a subset of the full HTTP Parser.</p>
 <p>The first thing you need to know is that HTTP Parser is not in Yacc/Lex. When it comes to parsing structured text data, you may pick Yacc and Lex for the tools, or parser combinators maybe. Though, you can't make use of those tools because an HTTP parser is allowed to see only a tiny fraction of data at a time. HTTP is based on TCP and data in TCP are transfered in several TCP packets.</p>
 <p>Instead, HTTP Parser is a State Machine. It consumes one ASCII character at a time and changes its internal state. It also triggers callbacks when interesting events happen. In this way, it can phase parsing -- process as many bytes as possible and wait until the next chunk arrives.</p>
 <p>Moreover, a State Machine is a function. It takes an old state and a character then returns a new state. When we get another charater, use the new state as an old state, pass them to the function again, and repeat this iteration until it reaches a terminal state.</p>
@@ -110,28 +133,56 @@
 <p>The first <code>callback</code> is <code>on_method</code> callback function. When the state machine finds (a part of) HTTP method, it triggers the callback so that we can extract a substring of <code>data</code>. The next <code>string</code> is <code>data</code> currently available for parsing. Last <code>state -&gt; int -&gt; state</code> is a slight modification of <code>state -&gt; char -&gt; state</code>. Since we want to get HTTP method when we reach the end of method, we need to keep track of index of the first character of the syntactic element (in this case, HTTP method). That's the <code>m</code> part.</p>
 <p>Also, since we can see only a tiny fraction of <code>data</code> at a time, we need to refill <code>data</code> after we consume all of it. In that case, we need to reset <code>m</code> which points to a character in the previous <code>data</code> since <code>m</code> doesn't mean anything in the new <code>data</code>. Before we reset <code>m</code> to 0, we need to trigger the callback for a substring of <code>data</code> from <code>m</code> to the end of <code>data</code>. So, we may have several <code>on_message</code> callbacks for a single HTTP method.</p>
 <p>By following this approach, a full-fledged HTTP/1.1 parser can be constructed with a single function. <a href="https://github.com/ichiban/1w">My implementation is on GitHub</a>.</p>
-      </main>
-      <aside>
-	<div>
-	  <img src="img/profile.jpeg" alt="profile" />
-	  <p>Hi, I'm Ichiban.<br />I'm a software developer<br />in Tokyo, Japan.</p>
-	</div>
-	<ul>
-	  <li><a href="https://twitter.com/1ban" alt="twitter"><svg width="26" height="26" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1408 610q-56 25-121 34 68-40 93-117-65 38-134 51-61-66-153-66-87 0-148.5 61.5t-61.5 148.5q0 29 5 48-129-7-242-65t-192-155q-29 50-29 106 0 114 91 175-47-1-100-26v2q0 75 50 133.5t123 72.5q-29 8-51 8-13 0-39-4 21 63 74.5 104t121.5 42q-116 90-261 90-26 0-50-3 148 94 322 94 112 0 210-35.5t168-95 120.5-137 75-162 24.5-168.5q0-18-1-27 63-45 105-109zm256-194v960q0 119-84.5 203.5t-203.5 84.5h-960q-119 0-203.5-84.5t-84.5-203.5v-960q0-119 84.5-203.5t203.5-84.5h960q119 0 203.5 84.5t84.5 203.5z"/></svg> @1ban</a>
-	  <li><a href="https://github.com/ichiban" alt="github"><svg width="26" height="26" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M522 1352q-8 9-20-3-13-11-4-19 8-9 20 3 12 11 4 19zm-42-61q9 12 0 19-8 6-17-7t0-18q9-7 17 6zm-61-60q-5 7-13 2-10-5-7-12 3-5 13-2 10 5 7 12zm31 34q-6 7-16-3-9-11-2-16 6-6 16 3 9 11 2 16zm129 112q-4 12-19 6-17-4-13-15t19-7q16 5 13 16zm63 5q0 11-16 11-17 2-17-11 0-11 16-11 17-2 17 11zm58-10q2 10-14 14t-18-8 14-15q16-2 18 9zm964-956v960q0 119-84.5 203.5t-203.5 84.5h-224q-16 0-24.5-1t-19.5-5-16-14.5-5-27.5v-239q0-97-52-142 57-6 102.5-18t94-39 81-66.5 53-105 20.5-150.5q0-121-79-206 37-91-8-204-28-9-81 11t-92 44l-38 24q-93-26-192-26t-192 26q-16-11-42.5-27t-83.5-38.5-86-13.5q-44 113-7 204-79 85-79 206 0 85 20.5 150t52.5 105 80.5 67 94 39 102.5 18q-40 36-49 103-21 10-45 15t-57 5-65.5-21.5-55.5-62.5q-19-32-48.5-52t-49.5-24l-20-3q-21 0-29 4.5t-5 11.5 9 14 13 12l7 5q22 10 43.5 38t31.5 51l10 23q13 38 44 61.5t67 30 69.5 7 55.5-3.5l23-4q0 38 .5 103t.5 68q0 22-11 33.5t-22 13-33 1.5h-224q-119 0-203.5-84.5t-84.5-203.5v-960q0-119 84.5-203.5t203.5-84.5h960q119 0 203.5 84.5t84.5 203.5z"/></svg> @ichiban</a></li>
-	  <li><a href="mailto:yichiban@gmail.com" alt="email"><svg width="26" height="26" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1376 128q119 0 203.5 84.5t84.5 203.5v960q0 119-84.5 203.5t-203.5 84.5h-960q-119 0-203.5-84.5t-84.5-203.5v-960q0-119 84.5-203.5t203.5-84.5h960zm32 1056v-436q-31 35-64 55-34 22-132.5 85t-151.5 99q-98 69-164 69t-164-69q-46-32-141.5-92.5t-142.5-92.5q-12-8-33-27t-31-27v436q0 40 28 68t68 28h832q40 0 68-28t28-68zm0-573q0-41-27.5-70t-68.5-29h-832q-40 0-68 28t-28 68q0 37 30.5 76.5t67.5 64.5q47 32 137.5 89t129.5 83q3 2 17 11.5t21 14 21 13 23.5 13 21.5 9.5 22.5 7.5 20.5 2.5 20.5-2.5 22.5-7.5 21.5-9.5 23.5-13 21-13 21-14 17-11.5l267-174q35-23 66.5-62.5t31.5-73.5z"/></svg> yichiban@gmail.com</a></li>
-        </ul>
-      </aside>
-    </article>
-        <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-      
-      ga('create', 'UA-86128193-1', 'auto');
-      ga('send', 'pageview');
-      
-    </script>
+        </section>
+
+        <!-- Two -->
+          <section>
+            <h2>Recent Work</h2>
+            <div class="row">
+              <article class="6u 12u$(xsmall) work-item">
+                <a href="http://www.postmore.com/" class="image fit thumb"><img src="images/thumbs/postmore.jpg" alt="postmore" /></a>
+                <h3>Postmore</h3>
+                <p>Brand Ambassador Program Management App.</p>
+              </article>
+              <article class="6u$ 12u$(xsmall) work-item">
+                <a href="https://github.com/ichiban/linesqueak" class="image fit thumb"><img src="images/thumbs/02.jpg" alt="" /></a>
+                <h3>Linesqueak</h3>
+                <p>Linenoise clone in Go</p>
+              </article>
+          </section>
+
+        <!-- Three -->
+          <section id="three">
+            <h2>Get In Touch</h2>
+            <p>Do you have a project you want to talk with me, or just hang out? Feel free to drop me a line!</p>
+	    <a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span> yichiban@gmail.com</a>
+          </section>
+
+      </div>
+
+    <!-- Footer -->
+      <footer id="footer">
+        <div class="inner">
+          <ul class="icons">
+            <li><a href="https://twitter.com/1ban" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="https://github.com/ichiban" class="icon fa-github"><span class="label">Github</span></a></li>
+            <li><a href="https://www.linkedin.com/in/yutakaichibangase" class="icon fa-linkedin"><span class="label">Dribbble</span></a></li>
+            <li><a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span></a></li>
+          </ul>
+          <ul class="copyright">
+            <li>&copy; 2016 Yutaka Ichibangase</li>
+	    <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+          </ul>
+        </div>
+      </footer>
+
+    <!-- Scripts -->
+      <script src="assets/js/jquery.min.js"></script>
+      <script src="assets/js/jquery.poptrox.min.js"></script>
+      <script src="assets/js/skel.min.js"></script>
+      <script src="assets/js/util.js"></script>
+      <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+      <script src="assets/js/main.js"></script>
+
   </body>
 </html>

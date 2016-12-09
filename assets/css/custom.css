@@ -1,0 +1,39 @@
+ul.authors {
+  display: inline;
+  padding: 0;
+}
+
+ul.authors::after {
+  content: ' wrote';
+}
+
+ul.authors li {
+  display: inline;
+  padding: 0;
+}
+
+ul.keywords {
+  display: inline;
+  padding: 0;
+}
+
+ul.keywords::before {
+  content: 'on ';
+}
+
+ul.keywords li {
+  display: inline;
+  padding: 0;
+}
+
+ul.keywords li:not(:last-child)::after {
+  content: ', ';
+}
+
+ul.keywords li:last-child::before {
+  content: 'and ';
+}
+
+time.date::before {
+  content: 'on ';
+}

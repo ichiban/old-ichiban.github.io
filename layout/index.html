@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<!--
+  Strata by HTML5 UP
+  html5up.net | @ajlkn
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+    $for(author-meta)$
+    <meta name="author" content="$author-meta$" />
+    $endfor$
+    $if(date-meta)$
+    <meta name="date" content="$date-meta$" />
+    $endif$
+    $if(keywords)$
+    <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
+    $endif$
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@1ban" />
+    <meta name="twitter:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" />
+    <meta name="twitter:description" content="Ichiban wrote$if(keywords)$ on $for(keywords)$$keywords$, $endfor$and more.$endif$" />
+    $if(highlighting-css)$
+    <style type="text/css">
+      $highlighting-css$
+    </style>
+    $endif$
+    $for(css)$
+    <link rel="stylesheet" href="$css$" type="text/css" />
+    $endfor$
+    $if(math)$
+    $math$
+    $endif$
+    $for(header-includes)$
+    $header-includes$
+    $endfor$
+
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+  </head>
+  <body id="top">
+
+    <!-- Header -->
+      <header id="header">
+        <div class="inner">
+          <a href="index.html" class="image avatar"><img src="images/avatar.jpg" alt="" /></a>
+          <h1><strong>I am Ichiban</strong>, <br />a software developer <br />in Tokyo, Japan.</h1>
+        </div>
+      </header>
+
+    <!-- Main -->
+      <div id="main">
+
+        <!-- One -->
+        <section id="one">
+	  $if(title)$
+	  <header class="major">
+	    <h1>$title$</h1>
+	    $if(subtitle)$
+	    <p>$subtitle$</p>
+	    $endif$
+	    <p>
+	    $if(author)$
+	    <ul class="authors">
+	      $for(author)$
+	      <li>$author$</li>
+	      $endfor$
+	    </ul>
+	    $endif$
+	    $if(keywords)$
+	    <ul class="keywords">
+	      $for(keywords)$
+	      <li>$keywords$</li>
+	      $endfor$
+	    </ul>
+	    $endif$
+	    $if(date-meta)$
+	    <time class="date">$date-meta$</time>
+	    $endif$
+	    </p>
+	  </header>
+	  $endif$
+	  $if(toc)$
+	  <hr />
+	  $toc$
+	  <hr />
+	  $endif$
+	  $body$
+        </section>
+
+        <!-- Two -->
+          <section>
+            <h2>Recent Work</h2>
+            <div class="row">
+              <article class="6u 12u$$(xsmall) work-item">
+                <a href="http://www.postmore.com/" class="image fit thumb"><img src="images/thumbs/postmore.jpg" alt="postmore" /></a>
+                <h3>Postmore</h3>
+                <p>Brand Ambassador Program Management App.</p>
+              </article>
+              <article class="6u$$ 12u$$(xsmall) work-item">
+                <a href="https://github.com/ichiban/linesqueak" class="image fit thumb"><img src="images/thumbs/02.jpg" alt="" /></a>
+                <h3>Linesqueak</h3>
+                <p>Linenoise clone in Go</p>
+              </article>
+          </section>
+
+        <!-- Three -->
+          <section id="three">
+            <h2>Get In Touch</h2>
+            <p>Do you have a project you want to talk with me, or just hang out? Feel free to drop me a line!</p>
+	    <a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span> yichiban@gmail.com</a>
+          </section>
+
+      </div>
+
+    <!-- Footer -->
+      <footer id="footer">
+        <div class="inner">
+          <ul class="icons">
+            <li><a href="https://twitter.com/1ban" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="https://github.com/ichiban" class="icon fa-github"><span class="label">Github</span></a></li>
+            <li><a href="https://www.linkedin.com/in/yutakaichibangase" class="icon fa-linkedin"><span class="label">Dribbble</span></a></li>
+            <li><a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span></a></li>
+          </ul>
+          <ul class="copyright">
+            <li>&copy; 2016 Yutaka Ichibangase</li>
+	    <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+          </ul>
+        </div>
+      </footer>
+
+    <!-- Scripts -->
+      <script src="assets/js/jquery.min.js"></script>
+      <script src="assets/js/jquery.poptrox.min.js"></script>
+      <script src="assets/js/skel.min.js"></script>
+      <script src="assets/js/util.js"></script>
+      <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+      <script src="assets/js/main.js"></script>
+
+  </body>
+</html>

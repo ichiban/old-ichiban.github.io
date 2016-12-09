@@ -27,7 +27,7 @@ articles.db: articles.sql
 	cat $< | $(SQLITE) $@
 
 index.md: articles.db
-	echo "# Hi, I'm Ichiban" > $@
+	echo "# Hi, I am Ichiban" > $@
 	echo "" >> $@
 	echo "I'm a Software Developer in Tokyo, Japan." >> $@
 	echo "" >> $@
@@ -39,8 +39,8 @@ index.md: articles.db
 %.html: %.md $(LAYOUT)
 	$(PANDOC) \
 	--output $@ \
-	--template=layout/article.html \
-	--css=css/normalize.css \
-	--css=css/common.css \
+	--template=layout/index.html \
+	--css=assets/css/main.css \
+	--css=assets/css/custom.css \
 	--mathjax \
 	$<

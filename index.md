@@ -1,4 +1,4 @@
-# Hi, I'm Ichiban
+# Hi, I am Ichiban
 
 I'm a Software Developer in Tokyo, Japan.
 
