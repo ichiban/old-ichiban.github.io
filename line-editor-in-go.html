@@ -1,0 +1,404 @@
+<!DOCTYPE HTML>
+<!--
+  Strata by HTML5 UP
+  html5up.net | @ajlkn
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Line Editor in Go</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+        <meta name="author" content="Ichiban" />
+            <meta name="date" content="2016-12-10" />
+            <meta name="keywords" content="CLI, SSH, Golang" />
+        <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@1ban" />
+    <meta name="twitter:title" content="Line Editor in Go" />
+    <meta name="twitter:description" content="Ichiban wrote on CLI, SSH, Golang, and more." />
+        <style type="text/css">
+      div.sourceCode { overflow-x: auto; }
+      table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+        margin: 0; padding: 0; vertical-align: baseline; border: none; }
+      table.sourceCode { width: 100%; line-height: 100%; }
+      td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+      td.sourceCode { padding-left: 5px; }
+      code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+      code > span.dt { color: #902000; } /* DataType */
+      code > span.dv { color: #40a070; } /* DecVal */
+      code > span.bn { color: #40a070; } /* BaseN */
+      code > span.fl { color: #40a070; } /* Float */
+      code > span.ch { color: #4070a0; } /* Char */
+      code > span.st { color: #4070a0; } /* String */
+      code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+      code > span.ot { color: #007020; } /* Other */
+      code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+      code > span.fu { color: #06287e; } /* Function */
+      code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+      code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+      code > span.cn { color: #880000; } /* Constant */
+      code > span.sc { color: #4070a0; } /* SpecialChar */
+      code > span.vs { color: #4070a0; } /* VerbatimString */
+      code > span.ss { color: #bb6688; } /* SpecialString */
+      code > span.im { } /* Import */
+      code > span.va { color: #19177c; } /* Variable */
+      code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+      code > span.op { color: #666666; } /* Operator */
+      code > span.bu { } /* BuiltIn */
+      code > span.ex { } /* Extension */
+      code > span.pp { color: #bc7a00; } /* Preprocessor */
+      code > span.at { color: #7d9029; } /* Attribute */
+      code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+      code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+      code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+      code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    </style>
+            <link rel="stylesheet" href="assets/css/main.css" type="text/css" />
+        <link rel="stylesheet" href="assets/css/custom.css" type="text/css" />
+            
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+  </head>
+  <body id="top">
+
+    <!-- Header -->
+      <header id="header">
+        <div class="inner">
+          <a href="index.html" class="image avatar"><img src="images/avatar.jpg" alt="" /></a>
+          <h1><strong>I am Ichiban</strong>, <br />a software developer <br />in Tokyo, Japan.</h1>
+        </div>
+      </header>
+
+    <!-- Main -->
+      <div id="main">
+
+        <!-- One -->
+        <section id="one">
+	  	  <header class="major">
+	    <h1>Line Editor in Go</h1>
+	    	    <p>
+	    	    <ul class="authors">
+	      	      <li>Ichiban</li>
+	      	    </ul>
+	    	    	    <ul class="keywords">
+	      	      <li>CLI</li>
+	      	      <li>SSH</li>
+	      	      <li>Golang</li>
+	      	    </ul>
+	    	    	    <time class="date">2016-12-10</time>
+	    	    </p>
+	  </header>
+	  	  	  <p><a href="http://qiita.com/ichiban@github/items/1546d2df8842f9737bf5">日本語版はこちら</a></p>
+<h1 id="introduction">Introduction</h1>
+<p>It's easy to write an SSH server in Go. In most cases, your SSH server deals with command line inputs from users. Then, you'll need a piece of software called a line editor which converts key strokes into string. In Go, it's <code>golang.org/x/crypto/ssh/terminal</code>.</p>
+<h1 id="write-an-ssh-server">Write an SSH Server</h1>
+<p>Let's write an SSH server. You'll need <code>golang.org/x/crypto/ssh</code> to write an SSH server in Go.</p>
+<p>For example, we'll consider a simple case which echoes back your input lines. It's around 120 lines so you don't look into details. Here's a summary of it:</p>
+<ul>
+<li>Shows prompt by <code>w.WriteString(prompt)</code></li>
+<li>Takes an input line by <code>l, _, err := r.ReadLine()</code></li>
+<li>Echoes back the input line <code>w.WriteString(&quot;\r\nYou've typed: &quot; + string(l) + &quot;\n&quot;)</code></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="st">&quot;bufio&quot;</span>
+    <span class="st">&quot;fmt&quot;</span>
+    <span class="st">&quot;io/ioutil&quot;</span>
+    <span class="st">&quot;log&quot;</span>
+    <span class="st">&quot;net&quot;</span>
+    <span class="st">&quot;os/exec&quot;</span>
+
+    <span class="st">&quot;golang.org/x/crypto/ssh&quot;</span>
+)
+
+<span class="kw">func</span> main() {
+    key, err := privateKey()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Fatalf(<span class="st">&quot;failed to load private key: %v&quot;</span>, err)
+    }
+
+    config := &amp;ssh.ServerConfig{NoClientAuth: <span class="ot">true</span>}
+    config.AddHostKey(key)
+
+    listener, err := net.Listen(<span class="st">&quot;tcp&quot;</span>, <span class="st">&quot;0.0.0.0:2022&quot;</span>)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Fatalf(<span class="st">&quot;failed to listen on 2022: %v&quot;</span>, err)
+    }
+
+    <span class="kw">for</span> {
+        tcp, err := listener.Accept()
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to accept tcp connection: %v&quot;</span>, err)
+            <span class="kw">continue</span>
+        }
+
+        _, chans, reqs, err := ssh.NewServerConn(tcp, config)
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to handshake: %v&quot;</span>, err)
+            <span class="kw">continue</span>
+        }
+
+        <span class="kw">go</span> ssh.DiscardRequests(reqs)
+        <span class="kw">go</span> handleChannels(chans)
+    }
+}
+
+<span class="kw">func</span> handleChannels(chans &lt;-<span class="kw">chan</span> ssh.NewChannel) {
+    <span class="kw">for</span> c := <span class="kw">range</span> chans {
+        <span class="kw">go</span> handleChannel(c)
+    }
+}
+
+<span class="kw">func</span> handleChannel(c ssh.NewChannel) {
+    <span class="kw">if</span> t := c.ChannelType(); t != <span class="st">&quot;session&quot;</span> {
+        msg := fmt.Sprintf(<span class="st">&quot;unknown channel type: %s&quot;</span>, t)
+        c.Reject(ssh.UnknownChannelType, msg)
+        <span class="kw">return</span>
+    }
+
+    conn, _, err := c.Accept()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Printf(<span class="st">&quot;failed to accept channel: %v&quot;</span>, err)
+        <span class="kw">return</span>
+    }
+    <span class="kw">defer</span> conn.Close()
+
+    r := bufio.NewReader(conn)
+    w := bufio.NewWriter(conn)
+    prompt := <span class="st">&quot;&gt; &quot;</span>
+
+    <span class="kw">for</span> {
+        <span class="kw">if</span> _, err := w.WriteString(prompt); err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to write: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+
+        <span class="kw">if</span> err := w.Flush(); err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to flush: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+
+        l, _, err := r.ReadLine()
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to read: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+
+        <span class="kw">if</span> _, err := w.WriteString(<span class="st">&quot;</span><span class="ch">\r\n</span><span class="st">You&#39;ve typed: &quot;</span> + <span class="dt">string</span>(l) + <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>); err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to write: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+
+        <span class="kw">if</span> err := w.Flush(); err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to flush: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+    }
+}
+
+<span class="kw">func</span> privateKey() (ssh.Signer, <span class="dt">error</span>) {
+    b, err := privateKeyBytes()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">nil</span>, err
+    }
+
+    <span class="kw">return</span> ssh.ParsePrivateKey(b)
+}
+
+<span class="kw">func</span> privateKeyBytes() ([]<span class="dt">byte</span>, <span class="dt">error</span>) {
+    <span class="kw">if</span> key, err := ioutil.ReadFile(<span class="st">&quot;example.rsa&quot;</span>); err == <span class="ot">nil</span> {
+        <span class="kw">return</span> key, err
+    }
+
+    <span class="kw">if</span> err := exec.Command(<span class="st">&quot;ssh-keygen&quot;</span>, <span class="st">&quot;-f&quot;</span>, <span class="st">&quot;example.rsa&quot;</span>, <span class="st">&quot;-t&quot;</span>, <span class="st">&quot;rsa&quot;</span>, <span class="st">&quot;-N&quot;</span>, <span class="st">&quot;&quot;</span>).Run(); err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">nil</span>, err
+    }
+
+    <span class="kw">return</span> ioutil.ReadFile(<span class="st">&quot;example.rsa&quot;</span>)
+}</code></pre></div>
+<p>Now try this SSH server. <code>go run [file name]</code> will start the server and open a new terminal, type <code>ssh -p2022 localhost</code> to open a client. You'll find it's mulfunctioning very early:</p>
+<ul>
+<li>It doesn't show editing states</li>
+<li><code>Ctrl-d</code> won't terminate the session</li>
+<li>Return key doesn't work</li>
+</ul>
+<p>In other words, it's not working at all. These problems are because we're not using a line editor.</p>
+<h1 id="add-a-line-editor-to-the-ssh-server">Add a line editor to the SSH server</h1>
+<p>A line editor is a kind of libraries which displays editing states while user is typing and once user hits return key, sends back the confirmed input line to the host program. There're well-known C implementations such as readline, libedit, and linenoise.</p>
+<p>The SSH server above doesn't display editing states because it doesn't refresh the displayed contents while user's typing. <code>Ctrl-d</code> doesn't work because it's not capable of recognize it yet. Also, It is a return (CR <code>0x0D</code>) what it recieves instead of an end of line (LF <code>0x0A</code> or CR+LF <code>0x0D, 0x0A</code> depending on the platform). Thus, <code>r.ReadLine()</code> can't detect confirmation of input lines. In other words, it is key strokes what the SSH server is receiving, not strings. A line editor can retrieve strings out of key strokes.</p>
+<p>Now let's add a line editor to the SSH server. It's time for <code>golang.org/x/crypto/ssh/terminal</code>. The example code below is around 100 lines so you can skip. The points are:</p>
+<ul>
+<li>Instanciates a line editor <code>t := terminal.NewTerminal(conn, &quot;&gt; &quot;)</code></li>
+<li>Receives a user input line <code>l, err := t.ReadLine()</code></li>
+<li>Echoes back the line <code>t.Write([]byte(&quot;You've typed: &quot; + string(l) + &quot;\r\n&quot;))</code></li>
+</ul>
+<p>It displays the prompt automatically so we don't have to care.</p>
+<div class="sourceCode"><pre class="sourceCode go"><code class="sourceCode go"><span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="st">&quot;fmt&quot;</span>
+    <span class="st">&quot;io/ioutil&quot;</span>
+    <span class="st">&quot;log&quot;</span>
+    <span class="st">&quot;net&quot;</span>
+    <span class="st">&quot;os/exec&quot;</span>
+
+    <span class="st">&quot;golang.org/x/crypto/ssh&quot;</span>
+    <span class="st">&quot;golang.org/x/crypto/ssh/terminal&quot;</span>
+)
+
+<span class="kw">func</span> main() {
+    key, err := privateKey()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Fatalf(<span class="st">&quot;failed to load private key: %v&quot;</span>, err)
+    }
+
+    config := &amp;ssh.ServerConfig{NoClientAuth: <span class="ot">true</span>}
+    config.AddHostKey(key)
+
+    listener, err := net.Listen(<span class="st">&quot;tcp&quot;</span>, <span class="st">&quot;0.0.0.0:2022&quot;</span>)
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Fatalf(<span class="st">&quot;failed to listen on 2022: %v&quot;</span>, err)
+    }
+
+    <span class="kw">for</span> {
+        tcp, err := listener.Accept()
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to accept tcp connection: %v&quot;</span>, err)
+            <span class="kw">continue</span>
+        }
+
+        _, chans, reqs, err := ssh.NewServerConn(tcp, config)
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to handshake: %v&quot;</span>, err)
+            <span class="kw">continue</span>
+        }
+
+        <span class="kw">go</span> ssh.DiscardRequests(reqs)
+        <span class="kw">go</span> handleChannels(chans)
+    }
+}
+
+<span class="kw">func</span> handleChannels(chans &lt;-<span class="kw">chan</span> ssh.NewChannel) {
+    <span class="kw">for</span> c := <span class="kw">range</span> chans {
+        <span class="kw">go</span> handleChannel(c)
+    }
+}
+
+<span class="kw">func</span> handleChannel(c ssh.NewChannel) {
+    <span class="kw">if</span> t := c.ChannelType(); t != <span class="st">&quot;session&quot;</span> {
+        msg := fmt.Sprintf(<span class="st">&quot;unknown channel type: %s&quot;</span>, t)
+        c.Reject(ssh.UnknownChannelType, msg)
+        <span class="kw">return</span>
+    }
+
+    conn, _, err := c.Accept()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        log.Printf(<span class="st">&quot;failed to accept channel: %v&quot;</span>, err)
+        <span class="kw">return</span>
+    }
+    <span class="kw">defer</span> conn.Close()
+
+    t := terminal.NewTerminal(conn, <span class="st">&quot;&gt; &quot;</span>)
+
+    <span class="kw">for</span> {
+        l, err := t.ReadLine()
+        <span class="kw">if</span> err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to read: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+
+        <span class="kw">if</span> _, err := t.Write([]<span class="dt">byte</span>(<span class="st">&quot;You&#39;ve typed: &quot;</span> + <span class="dt">string</span>(l) + <span class="st">&quot;</span><span class="ch">\r\n</span><span class="st">&quot;</span>)); err != <span class="ot">nil</span> {
+            log.Printf(<span class="st">&quot;failed to write: %v&quot;</span>, err)
+            <span class="kw">return</span>
+        }
+    }
+}
+
+<span class="kw">func</span> privateKey() (ssh.Signer, <span class="dt">error</span>) {
+    b, err := privateKeyBytes()
+    <span class="kw">if</span> err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">nil</span>, err
+    }
+
+    <span class="kw">return</span> ssh.ParsePrivateKey(b)
+}
+
+<span class="kw">func</span> privateKeyBytes() ([]<span class="dt">byte</span>, <span class="dt">error</span>) {
+    <span class="kw">if</span> key, err := ioutil.ReadFile(<span class="st">&quot;example.rsa&quot;</span>); err == <span class="ot">nil</span> {
+        <span class="kw">return</span> key, err
+    }
+
+    <span class="kw">if</span> err := exec.Command(<span class="st">&quot;ssh-keygen&quot;</span>, <span class="st">&quot;-f&quot;</span>, <span class="st">&quot;example.rsa&quot;</span>, <span class="st">&quot;-t&quot;</span>, <span class="st">&quot;rsa&quot;</span>, <span class="st">&quot;-N&quot;</span>, <span class="st">&quot;&quot;</span>).Run(); err != <span class="ot">nil</span> {
+        <span class="kw">return</span> <span class="ot">nil</span>, err
+    }
+
+    <span class="kw">return</span> ioutil.ReadFile(<span class="st">&quot;example.rsa&quot;</span>)
+}</code></pre></div>
+<p>By installing a line editor, now we can see editing states as we type, terminate the session with <code>Ctrl-d</code>, and retrieve input lines.</p>
+<h1 id="success">Success!</h1>
+<div class="figure">
+<img src="images/balloon.png" alt="balloon.png" />
+<p class="caption">balloon.png</p>
+</div>
+<p><a href="https://github.com/tenntenn/gopher-stickers">&quot;Gopher Stickers&quot;</a> by <a href="https://twitter.com/tenntenn">Takuya Ueda</a> is licensed under <a href="https://creativecommons.org/licenses/by/3.0/deed.ja">CC BY 3.0</a></p>
+<h1 id="conclusion">Conclusion</h1>
+<p>I explained you can easily add a line editor to your SSH server with <code>golang.org/x/crypto/ssh/terminal</code>.</p>
+<p>This article was originally written for the first day of <a href="http://qiita.com/advent-calendar/2016/go2">Go (その2) Advent Calendar 2016</a> in Japanese. When I booked the date, I announced it'll be about some caveat on starting Go.</p>
+<p>I wrote this article because I mistakenly made <a href="https://github.com/ichiban/linesqueak">my own version of line editor</a> without knowing there's a de facto implementation.</p>
+<p>So, here's a caveat: the awesome library you came up with oftentimes has a better alternative under <code>golang.org/x/</code>.</p>
+        </section>
+
+        <!-- Two -->
+          <section>
+            <h2>Recent Work</h2>
+            <div class="row">
+              <article class="6u 12u$(xsmall) work-item">
+                <a href="http://www.postmore.com/" class="image fit thumb"><img src="images/thumbs/postmore.jpg" alt="postmore" /></a>
+                <h3>Postmore</h3>
+                <p>Brand Ambassador Program Management App.</p>
+              </article>
+              <article class="6u$ 12u$(xsmall) work-item">
+                <a href="https://github.com/ichiban/linesqueak" class="image fit thumb"><img src="images/thumbs/02.jpg" alt="" /></a>
+                <h3>Linesqueak</h3>
+                <p>Linenoise clone in Go</p>
+              </article>
+          </section>
+
+        <!-- Three -->
+          <section id="three">
+            <h2>Get In Touch</h2>
+            <p>Do you have a project you want to talk with me, or just hang out? Feel free to drop me a line!</p>
+	    <a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span> yichiban@gmail.com</a>
+          </section>
+
+      </div>
+
+    <!-- Footer -->
+      <footer id="footer">
+        <div class="inner">
+          <ul class="icons">
+            <li><a href="https://twitter.com/1ban" class="icon fa-twitter"><span class="label">Twitter</span></a></li>
+            <li><a href="https://github.com/ichiban" class="icon fa-github"><span class="label">Github</span></a></li>
+            <li><a href="https://www.linkedin.com/in/yutakaichibangase" class="icon fa-linkedin"><span class="label">Dribbble</span></a></li>
+            <li><a href="mailto:yichiban@gmail.com" class="icon fa-envelope-o"><span class="label">Email</span></a></li>
+          </ul>
+          <ul class="copyright">
+            <li>&copy; 2016 Yutaka Ichibangase</li>
+	    <li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+          </ul>
+        </div>
+      </footer>
+
+    <!-- Scripts -->
+      <script src="assets/js/jquery.min.js"></script>
+      <script src="assets/js/jquery.poptrox.min.js"></script>
+      <script src="assets/js/skel.min.js"></script>
+      <script src="assets/js/util.js"></script>
+      <!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+      <script src="assets/js/main.js"></script>
+
+  </body>
+</html>
